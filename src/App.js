@@ -10,12 +10,18 @@ import {
   Select,
 } from "@mui/material";
 import Table from "./components/Table";
+import { sortData } from "./components/Util";
+import LineGraph from "./components/LineGraph";
+import "leaflet/dist/leaflet.css";
 
 function App() {
   const [countries, setCountries] = useState([]);
   const [country, setCountry] = useState("worldwide");
   const [countryInfo, setCountryInfo] = useState({});
-  const [tableData, setTableData] = useState([])
+  const [tableData, setTableData] = useState([]);
+  const [mapCenter, setMapCenter] = useState({ lat:34.80746,lng:-40.4796});
+  const [mapZoom, setMapZoom] = useState(3);
+  const [mapCountries, setMapCountries] = useState([])
 
   //fetching data for worldwide
   useEffect(() => {
@@ -43,6 +49,8 @@ function App() {
         // All of the data ...
         // form the country response
         setCountryInfo(data);
+        setMapCenter([data.countryInfo.lat, data.countryInfo.long]);
+        setMapZoom(4);
       });
   };
   console.log("COUNTRY INFO >>>", countryInfo);
@@ -59,8 +67,11 @@ function App() {
           name: country.country,
           value: country.countryInfo.iso2,
         }));
-        setTableData(data);
+        //for the placing the highest cases at the top
+        const sortedData = sortData(data);
+        setTableData(sortedData);
         setCountries(Countries);
+        setMapCountries(data);
       });
   };
   //useEffect handle the fetching function that is it is a side effect
@@ -107,18 +118,18 @@ function App() {
           />
         </div>
 
-        <Map />
+        <Map countries={mapCountries} center={mapCenter} zoom={mapZoom} />
       </div>
 
       <Card className="app__right">
         <CardContent>
           <h3>Live Cases by Country</h3>
-          {/* for table */}
+
           <Table countries={tableData} />
-  
+
           <h3>Worldwide new cases</h3>
+          <LineGraph />
         </CardContent>
-        {/* fro graph */}
       </Card>
     </div>
   );
